@@ -1,4 +1,4 @@
-// Isso define que vamos usar SQLite (arquivo local) para facilitar o desenvolvimento
+// Configuration for SQLite (Development environment)
 datasource db {
   provider = "sqlite"
   url      = "file:./dev.db"
@@ -8,39 +8,103 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Modelo de Usuário (Espelho do Clerk)
+// =========================================================
+// USER & AUTHENTICATION
+// =========================================================
+
+// User model reflecting Clerk data
 model User {
-  id        String   @id // Vamos usar o ID do Clerk aqui (ex: user_2b3...)
+  id        String   @id // Matches Clerk User ID (e.g., user_2b3...)
   name      String
   email     String   @unique
+  imageUrl  String?  // Optional: User profile picture from Clerk
   createdAt DateTime @default(now())
-  
-  // Relação: Um usuário tem uma lista de favoritos
+  updatedAt DateTime @updatedAt
+   
+  // Relation: User has a list of favorite movies (MyList)
   myList    MyList[]
 }
 
-// Modelo de Filme
+// =========================================================
+// CONTENT MANAGEMENT (MOVIES & SHOWS)
+// =========================================================
+
+// Represents a Movie or a TV Show
 model Movie {
   id           String   @id @default(uuid())
   title        String
   description  String
-  thumbnailUrl String
-  videoUrl     String
-  duration     String
-  genre        String
   
-  // Relação inversa (necessária para o Prisma saber quem favoritou)
+  // Media Assets
+  thumbnailUrl String
+  previewUrl   String?  // Short clip for hover preview
+  videoUrl     String?  // Main video file (for movies)
+  
+  // Metadata
+  duration     String
+  rating       Float    // Requirements ask for "rating: number"
+  releaseYear  Int
+  
+  // Relations
+  tags         Tag[]    // Many-to-Many: Movies have multiple tags
+  actors       Actor[]  // Many-to-Many: Movies have multiple actors
+  episodes     Episode[] // One-to-Many: A TV Show has many episodes
+  
+  // Favorites
   favoritedBy  MyList[]
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
-// Tabela de Junção (Quem favoritou o quê)
+// Represents a single Episode of a TV Show
+model Episode {
+  id           String   @id @default(uuid())
+  title        String
+  description  String
+  videoUrl     String
+  thumbnailUrl String?
+  duration     String
+  
+  // Relation: Belongs to one Movie (TV Show context)
+  movieId      String
+  movie        Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  
+  createdAt    DateTime @default(now())
+}
+
+// Represents an Actor/Cast Member
+model Actor {
+  id        String   @id @default(uuid())
+  fullName  String
+  imageUrl  String?
+  
+  // Relation: Implicit Many-to-Many with Movie
+  movies    Movie[] 
+}
+
+// Represents Categories/Genres (e.g., "Action", "Comedy")
+model Tag {
+  id      String   @id @default(uuid())
+  name    String   @unique
+  
+  // Relation: Implicit Many-to-Many with Movie
+  movies  Movie[]
+}
+
+// =========================================================
+// INTERACTION (FAVORITES)
+// =========================================================
+
+// Join table for User Favorites
 model MyList {
   id      String @id @default(uuid())
   userId  String
   movieId String
-  
-  user    User   @relation(fields: [userId], references: [id])
-  movie   Movie  @relation(fields: [movieId], references: [id])
+   
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie   Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, movieId]) // Impede favoritar o mesmo filme 2x
+  // Ensures a user cannot favorite the same movie twice
+  @@unique([userId, movieId])
 }
