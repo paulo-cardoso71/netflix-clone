@@ -1,15 +1,12 @@
 'use client'; 
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { X, Play, Plus, ThumbsUp, Volume2, VolumeX } from 'lucide-react'; 
+import { X, Play, Plus, Volume2, VolumeX } from 'lucide-react'; 
 import { useAtom } from 'jotai';
 import { isModalOpenAtom, movieInModalAtom } from '@/store'; 
 import Image from 'next/image';
-// 1. Import Episode type from Prisma to define strict typing
 import { Movie, Episode } from '@prisma/client';
 
-// 2. Define a custom interface extending the basic Movie type
-// This tells TypeScript: "This specific movie object implies the existence of an episodes array"
 interface MovieWithDetails extends Movie {
   episodes?: Episode[];
 }
@@ -21,8 +18,6 @@ const InfoModal = () => {
   const [isVisible, setIsVisible] = useState(false); 
   const [isMuted, setIsMuted] = useState(true);
 
-  // Cast the generic movie to our detailed type safely
-  // We use 'unknown' first to escape the base type constraint, then cast to our extended type
   const movieDetails = movie as unknown as MovieWithDetails;
 
   const handleClose = useCallback(() => {
@@ -47,13 +42,26 @@ const InfoModal = () => {
   }
 
   return (
-    <div className="z-50 transition duration-300 bg-black/80 flex justify-center items-center overflow-x-hidden overflow-y-auto fixed inset-0">
-      <div className="relative w-auto mx-auto max-w-3xl rounded-md overflow-hidden">
+    // FIX 1: Removed 'items-center', added 'items-start' and 'pt-24'.
+    // This ensures the top of the modal (where the X button is) is always visible,
+    // even if the content is taller than the screen.
+    // FIX 2: Added onClick={handleClose} to the background wrapper to enable "Click Outside to Close"
+    <div 
+        onClick={handleClose}
+        className="z-50 transition duration-300 bg-black/80 flex justify-center items-start pt-24 overflow-x-hidden overflow-y-auto fixed inset-0"
+    >
+      <div className="relative w-auto mx-auto max-w-3xl rounded-md overflow-hidden mb-24">
         
-        <div className={`
-            ${isVisible ? 'scale-100' : 'scale-0'}
-            transform duration-300 relative flex-auto bg-zinc-900 drop-shadow-md
-        `}>
+        {/* FIX 3: Added onClick={(e) => e.stopPropagation()} 
+            This prevents clicks INSIDE the modal from bubbling up and closing it.
+        */}
+        <div 
+            onClick={(e) => e.stopPropagation()}
+            className={`
+                ${isVisible ? 'scale-100' : 'scale-0'}
+                transform duration-300 relative flex-auto bg-zinc-900 drop-shadow-md
+            `}
+        >
             
             <div className="relative h-96">
                 <Image 
@@ -112,10 +120,6 @@ const InfoModal = () => {
                     </div>
                 </div>
                 
-                {/* EPISODES LOGIC: 
-                    We use optional chaining (?.) and verify length > 0.
-                    Since we typed 'movieDetails' correctly above, TS is now happy.
-                */}
                 {movieDetails.episodes && movieDetails.episodes.length > 0 && (
                     <div className="mt-8 border-t border-zinc-700 pt-8">
                         <h3 className="text-white text-xl font-bold mb-4">
