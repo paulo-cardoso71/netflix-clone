@@ -13,6 +13,11 @@ export default async function Home() {
     take: 4, // Limit to 4 for now just to test the grid
     orderBy: {
       createdAt: 'desc',
+    },
+    include: {
+      tags: true,
+      actors: true,
+      episodes: true
     }
   });
 

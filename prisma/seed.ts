@@ -47,6 +47,39 @@ async function main() {
     }
   })
 
+  //Create a TV Show (Sintel) to test Episodes Logic
+  const series = await prisma.movie.create({
+    data: {
+      title: 'Sintel',
+      description: 'A lonely young woman, Sintel, helps and befriends a dragon, whom she calls Scales. A visually stunning fantasy short.',
+      thumbnailUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Big_buck_bunny_poster_big.jpg/800px-Big_buck_bunny_poster_big.jpg',
+      videoUrl: '', // Series don't have a single video URL, episodes do
+      duration: '1 Season', // Display text for Series
+      rating: 8.8,
+      releaseYear: 2010,
+      tags: {
+        connect: [{ id: actionTag.id }, { id: dramaTag.id }]
+      },
+      // Here we add Episodes
+      episodes: {
+        create: [
+            {
+                title: 'Chapter 1: The Meeting',
+                description: 'Sintel finds the dragon.',
+                videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+                duration: '12 min'
+            },
+            {
+                title: 'Chapter 2: The Search',
+                description: 'Sintel searches for Scales.',
+                videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+                duration: '15 min'
+            }
+        ]
+      }
+    }
+  })
+
   console.log('✅ Seeding finished.')
 }
 
