@@ -4,12 +4,24 @@ import React from 'react';
 import Image from 'next/image';
 import { Movie } from '@prisma/client';
 import { Play, Plus, ThumbsUp, ChevronDown } from 'lucide-react'; 
+import { useSetAtom } from 'jotai'; 
+import { isModalOpenAtom, movieInModalAtom } from '@/store';
 
 interface MovieCardProps {
   data: Movie;
 }
 
 const MovieCard: React.FC<MovieCardProps> = ({ data }) => {
+    // Hooks to update global state
+  const setIsOpen = useSetAtom(isModalOpenAtom);
+  const setMovie = useSetAtom(movieInModalAtom);
+
+  // Function to open modal with this card's data
+  const handleOpenModal = () => {
+    setMovie(data);
+    setIsOpen(true);
+  };
+
   return (
     // Main Container
     // 'group' allows us to control child styles when hovering over this parent
@@ -125,7 +137,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ data }) => {
                 </div>
                 
                 {/* More Info Button (Push to right) */}
-                <div className="
+                <div onClick={handleOpenModal} className="
                     cursor-pointer ml-auto group/item w-6 h-6 lg:w-10 lg:h-10 
                     border-2 border-gray-400 rounded-full 
                     flex justify-center items-center 
