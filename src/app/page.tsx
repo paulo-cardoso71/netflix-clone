@@ -1,21 +1,32 @@
+import Navbar from "@/components/shared/Navbar";
 import Hero from "@/components/shared/Hero";
+import MovieRow from "@/components/shared/MovieRow";
+import { PrismaClient } from "@prisma/client";
 
-export default function Home() {
+// Initialize Prisma Client (Best practice: move this to a singleton lib file later)
+const prisma = new PrismaClient();
+
+export default async function Home() {
+  // Fetch movies from the database directly on the server
+  // This runs on the server before sending HTML to the browser
+  const movies = await prisma.movie.findMany({
+    take: 4, // Limit to 4 for now just to test the grid
+    orderBy: {
+      createdAt: 'desc',
+    }
+  });
+
   return (
-    // The main tag serves as the page wrapper
-    <main className="relative bg-zinc-900 min-h-screen">
-      {/* Navbar is injected automatically by layout.tsx - Do not import it here */}
-      
+    <main className="relative bg-zinc-900 min-h-screen pb-40">
+      {/* Navbar is in layout.tsx */}
       <Hero />
       
-      {/* Movie Rows Placeholder - Waiting for Wireframes implementation */}
-      <div className="px-4 md:px-10 py-10">
-        <h2 className="text-white text-xl md:text-2xl font-bold mb-4">
-            Trending Now (Placeholder)
-        </h2>
+      <div className="pb-40">
+        {/* Render the list of movies fetched from DB */}
+        <MovieRow title="Trending Now" movies={movies} />
         
-        {/* Skeleton Loading State for visual feedback */}
-        <div className="h-40 bg-zinc-800 rounded animate-pulse w-full"></div>
+        {/* Placeholder for a second row */}
+        <MovieRow title="New Releases" movies={movies} />
       </div>
     </main>
   );
