@@ -1,0 +1,46 @@
+// Isso define que vamos usar SQLite (arquivo local) para facilitar o desenvolvimento
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Modelo de Usuário (Espelho do Clerk)
+model User {
+  id        String   @id // Vamos usar o ID do Clerk aqui (ex: user_2b3...)
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+  
+  // Relação: Um usuário tem uma lista de favoritos
+  myList    MyList[]
+}
+
+// Modelo de Filme
+model Movie {
+  id           String   @id @default(uuid())
+  title        String
+  description  String
+  thumbnailUrl String
+  videoUrl     String
+  duration     String
+  genre        String
+  
+  // Relação inversa (necessária para o Prisma saber quem favoritou)
+  favoritedBy  MyList[]
+}
+
+// Tabela de Junção (Quem favoritou o quê)
+model MyList {
+  id      String @id @default(uuid())
+  userId  String
+  movieId String
+  
+  user    User   @relation(fields: [userId], references: [id])
+  movie   Movie  @relation(fields: [movieId], references: [id])
+
+  @@unique([userId, movieId]) // Impede favoritar o mesmo filme 2x
+}
