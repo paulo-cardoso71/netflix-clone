@@ -5,11 +5,18 @@ import MovieCard from './MovieCard';
 interface MovieRowProps {
   title: string;
   movies: Movie[];
-  // Receive the list of favorite IDs from the parent (Page)
+  // Receive the list of favorite IDs from the parent
   userFavorites?: string[];
+  // NEW: Receive the list of liked IDs from the parent
+  userLikes?: string[];
 }
 
-const MovieRow: React.FC<MovieRowProps> = ({ title, movies, userFavorites = [] }) => {
+const MovieRow: React.FC<MovieRowProps> = ({ 
+  title, 
+  movies, 
+  userFavorites = [], 
+  userLikes = [] // Default to empty array to avoid errors
+}) => {
   return (
     <div className="px-4 md:px-12 mt-4 space-y-8">
       <div>
@@ -24,6 +31,8 @@ const MovieRow: React.FC<MovieRowProps> = ({ title, movies, userFavorites = [] }
                 data={movie} 
                 // Check if THIS movie ID exists in the user's favorites list
                 isFavorite={userFavorites.includes(movie.id)}
+                // NEW: Check if THIS movie ID exists in the user's likes list
+                isLiked={userLikes.includes(movie.id)}
             />
           ))}
         </div>

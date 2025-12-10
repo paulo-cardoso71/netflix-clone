@@ -1,6 +1,6 @@
 import Hero from "@/components/shared/Hero";
 import MovieRow from "@/components/shared/MovieRow";
-import { PrismaClient, Movie } from "@prisma/client"; // Added 'Movie' type import
+import { PrismaClient, Movie } from "@prisma/client"; 
 import { currentUser } from "@clerk/nextjs/server"; 
 
 const prisma = new PrismaClient();
@@ -12,12 +12,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   
   const user = await currentUser();
   
-  // FIX: Replaced 'any[]' with strict 'Movie[]' type to satisfy ESLint
   let myListMovies: Movie[] = [];
-
   let favoriteIds: string[] = [];
+  // NEW: Array to store IDs of liked movies
+  let likedIds: string[] = [];
 
   if (user) {
+    // 1. Fetch My List Data
     const listData = await prisma.myList.findMany({
       where: { userId: user.id },
       include: {
@@ -31,10 +32,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
       }
     });
     
-    // Map the relational result to a flat array of Movies
     myListMovies = listData.map((item) => item.movie);
-    // Extract just the IDs to pass to MovieRow for the "Checkmark" logic
     favoriteIds = listData.map((item) => item.movieId);
+
+    // 2. NEW: Fetch Likes Data
+    const likesData = await prisma.like.findMany({
+      where: { userId: user.id },
+    });
+    likedIds = likesData.map((item) => item.movieId);
   }
 
   const movies = await prisma.movie.findMany({
@@ -60,23 +65,24 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
       
       <div className={`pb-40 ${query ? 'pt-40' : 'pt-0'}`}>
         
+        {/* Pass likedIds to all rows */}
         <MovieRow 
             title={query ? `Results for "${query}"` : "Trending Now"} 
             movies={movies} 
-            userFavorites={favoriteIds} // <--- ADD THIS LINE
+            userFavorites={favoriteIds}
+            userLikes={likedIds} // <--- PASS HERE
         />
         
-        {/* MY LIST ROW: Shows up when the array has items */}
         {!query && myListMovies.length > 0 && (
           <MovieRow 
             title="My List" 
             movies={myListMovies} 
-            userFavorites={favoriteIds} // <--- ADD THIS LINE
+            userFavorites={favoriteIds}
+            userLikes={likedIds} // <--- PASS HERE
           />
         )}
         
-        {/* ADD THIS LINE BELOW TOO */}
-        {!query && <MovieRow title="New Releases" movies={movies} userFavorites={favoriteIds} />}
+        {!query && <MovieRow title="New Releases" movies={movies} userFavorites={favoriteIds} userLikes={likedIds} />}
 
         {query && movies.length === 0 && (
             <div className="flex flex-col items-center justify-center mt-20 text-gray-400">
