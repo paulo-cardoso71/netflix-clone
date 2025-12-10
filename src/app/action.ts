@@ -67,3 +67,61 @@ export async function toggleMyList(movieId: string) {
   // 4. Revalidate the path so the UI updates immediately
   revalidatePath("/"); 
 }
+
+export async function toggleLike(movieId: string) {
+  // 1. Authenticate User
+  const user = await currentUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  // 2. Sync User to Database (Safety Check)
+  // We repeat this check here to ensure the user exists before creating a Like relation
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+  });
+
+  if (!dbUser) {
+    await prisma.user.create({
+      data: {
+        id: user.id,
+        email: user.emailAddresses[0].emailAddress,
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+        imageUrl: user.imageUrl,
+      },
+    });
+  }
+
+  // 3. Check if Like already exists
+  const existingLike = await prisma.like.findUnique({
+    where: {
+      userId_movieId: {
+        userId: user.id,
+        movieId: movieId,
+      },
+    },
+  });
+
+  if (existingLike) {
+    // If liked, remove it (Unlike)
+    await prisma.like.delete({
+      where: {
+        id: existingLike.id,
+      },
+    });
+    console.log(`User ${user.id} unliked movie ${movieId}`);
+  } else {
+    // If not liked, add it
+    await prisma.like.create({
+      data: {
+        userId: user.id,
+        movieId: movieId,
+      },
+    });
+    console.log(`User ${user.id} liked movie ${movieId}`);
+  }
+
+  // 4. Update UI
+  revalidatePath("/");
+}
