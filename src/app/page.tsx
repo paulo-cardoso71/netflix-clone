@@ -1,6 +1,7 @@
 import Hero from "@/components/shared/Hero";
 import MovieRow from "@/components/shared/MovieRow";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Movie } from "@prisma/client"; // Added 'Movie' type import
+import { currentUser } from "@clerk/nextjs/server"; 
 
 const prisma = new PrismaClient();
 
@@ -8,6 +9,33 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   
   const params = await searchParams;
   const query = params.search || "";
+  
+  const user = await currentUser();
+  
+  // FIX: Replaced 'any[]' with strict 'Movie[]' type to satisfy ESLint
+  let myListMovies: Movie[] = [];
+
+  let favoriteIds: string[] = [];
+
+  if (user) {
+    const listData = await prisma.myList.findMany({
+      where: { userId: user.id },
+      include: {
+        movie: {
+          include: {
+            tags: true,
+            actors: true,
+            episodes: true
+          }
+        }
+      }
+    });
+    
+    // Map the relational result to a flat array of Movies
+    myListMovies = listData.map((item) => item.movie);
+    // Extract just the IDs to pass to MovieRow for the "Checkmark" logic
+    favoriteIds = listData.map((item) => item.movieId);
+  }
 
   const movies = await prisma.movie.findMany({
     where: {
@@ -32,17 +60,26 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
       
       <div className={`pb-40 ${query ? 'pt-40' : 'pt-0'}`}>
         
-        {/* FIX: Escaped quotes below using &quot; */}
         <MovieRow 
             title={query ? `Results for "${query}"` : "Trending Now"} 
             movies={movies} 
+            userFavorites={favoriteIds} // <--- ADD THIS LINE
         />
         
-        {!query && <MovieRow title="New Releases" movies={movies} />}
+        {/* MY LIST ROW: Shows up when the array has items */}
+        {!query && myListMovies.length > 0 && (
+          <MovieRow 
+            title="My List" 
+            movies={myListMovies} 
+            userFavorites={favoriteIds} // <--- ADD THIS LINE
+          />
+        )}
+        
+        {/* ADD THIS LINE BELOW TOO */}
+        {!query && <MovieRow title="New Releases" movies={movies} userFavorites={favoriteIds} />}
 
         {query && movies.length === 0 && (
             <div className="flex flex-col items-center justify-center mt-20 text-gray-400">
-                {/* FIX: Escaped quotes here: &quot;{query}&quot; */}
                 <p className="text-xl">
                     Your search for &quot;{query}&quot; did not have any matches.
                 </p>
