@@ -1,7 +1,7 @@
 'use client'; 
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { X, Play, Plus, Volume2, VolumeX } from 'lucide-react'; 
+import { X, Play, Plus, Volume2, VolumeX, Share2, Check } from 'lucide-react'; // Added Share2 and Check icons
 import { useAtom } from 'jotai';
 import { isModalOpenAtom, movieInModalAtom } from '@/store'; 
 import Image from 'next/image';
@@ -17,6 +17,9 @@ const InfoModal = () => {
   
   const [isVisible, setIsVisible] = useState(false); 
   const [isMuted, setIsMuted] = useState(true);
+  
+  // State to handle the "Copied!" visual feedback
+  const [isCopied, setIsCopied] = useState(false);
 
   const movieDetails = movie as unknown as MovieWithDetails;
 
@@ -25,6 +28,7 @@ const InfoModal = () => {
     setTimeout(() => {
         setIsOpen(false);
         setMovie(null);
+        setIsCopied(false); // Reset copy state when closing
     }, 300); 
   }, [setIsOpen, setMovie]);
 
@@ -37,24 +41,32 @@ const InfoModal = () => {
     }
   }, [isOpen]);
 
+  // Function to generate a Deep Link to this specific movie via Search URL
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    // Create a URL that automatically searches for this movie title
+    // Example: https://netflix-clone.com/?search=Sintel
+    const shareUrl = `${window.location.origin}/?search=${encodeURIComponent(movieDetails.title)}`;
+
+    navigator.clipboard.writeText(shareUrl).then(() => {
+        setIsCopied(true);
+        // Reset the icon back to "Share" after 2 seconds
+        setTimeout(() => setIsCopied(false), 2000);
+    });
+  };
+
   if (!isOpen || !movie) {
     return null;
   }
 
   return (
-    // FIX 1: Removed 'items-center', added 'items-start' and 'pt-24'.
-    // This ensures the top of the modal (where the X button is) is always visible,
-    // even if the content is taller than the screen.
-    // FIX 2: Added onClick={handleClose} to the background wrapper to enable "Click Outside to Close"
     <div 
         onClick={handleClose}
         className="z-50 transition duration-300 bg-black/80 flex justify-center items-start pt-24 overflow-x-hidden overflow-y-auto fixed inset-0"
     >
       <div className="relative w-auto mx-auto max-w-3xl rounded-md overflow-hidden mb-24">
         
-        {/* FIX 3: Added onClick={(e) => e.stopPropagation()} 
-            This prevents clicks INSIDE the modal from bubbling up and closing it.
-        */}
         <div 
             onClick={(e) => e.stopPropagation()}
             className={`
@@ -91,6 +103,19 @@ const InfoModal = () => {
                              <Plus className="w-4 md:w-6 text-white" />
                              My List
                         </button>
+                        
+                        {/* SHARE BUTTON */}
+                        <div 
+                            onClick={handleShare}
+                            className={`
+                                cursor-pointer h-10 w-10 border-2 rounded-full flex items-center justify-center transition
+                                ${isCopied ? 'border-green-500 bg-zinc-800' : 'border-gray-400 hover:border-white hover:bg-zinc-800'}
+                            `}
+                        >
+                            {isCopied ? <Check className="text-green-500 w-5" /> : <Share2 className="text-white w-5" />}
+                        </div>
+
+                        {/* Mute Toggle */}
                         <div 
                             onClick={() => setIsMuted(!isMuted)}
                             className="cursor-pointer h-10 w-10 border-2 border-gray-400 rounded-full flex items-center justify-center hover:border-white hover:bg-zinc-800 transition"
