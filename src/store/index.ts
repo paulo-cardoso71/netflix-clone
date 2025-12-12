@@ -1,14 +1,18 @@
 import { atom } from 'jotai';
-import { Movie } from '@prisma/client';
+import { Movie, Tag, Actor, Episode } from '@prisma/client';
 
-// Define a extended type to include relations (optional for now, but good practice)
-// This tells TypeScript that our movie might have extra data attached later
+// Define the full type with relations included
 export type MovieWithDetails = Movie & {
-  // We will add relations like genres/episodes here later
+  tags: Tag[];
+  actors: Actor[];
+  episodes: Episode[];
 };
 
-// Atom to control if the modal is visible (true/false)
 export const isModalOpenAtom = atom(false);
+export const movieInModalAtom = atom<MovieWithDetails | null>(null);
 
-// Atom to store the data of the movie currently being displayed in the modal
-export const movieInModalAtom = atom<Movie | null>(null);
+// NEW: Store the interaction state (Like/Favorite) passed from the Card
+export const modalStateAtom = atom<{ isFavorite: boolean; isLiked: boolean }>({
+  isFavorite: false,
+  isLiked: false,
+});

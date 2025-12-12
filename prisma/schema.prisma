@@ -24,6 +24,7 @@ model User {
   // Relation: User has a list of favorite movies (MyList)
   myList    MyList[]
   likes  Like[]
+  dislikes Dislike[]
 }
 
 // =========================================================
@@ -54,6 +55,7 @@ model Movie {
   // Favorites
   favoritedBy  MyList[]
   likes     Like[]
+  dislikes Dislike[]
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -121,4 +123,16 @@ model Like {
   movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
   @@unique([userId, movieId]) // Garante que o usuário só pode dar 1 like por filme
+}
+
+model Dislike {
+  id        String   @id @default(uuid())
+  userId    String
+  movieId   String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
 }
