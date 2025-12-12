@@ -4,10 +4,9 @@ import React, { useState, useTransition } from 'react';
 import Image from 'next/image';
 import { Movie } from '@prisma/client';
 import { Play, Plus, ThumbsUp, ChevronDown, Check } from 'lucide-react'; 
-// Import BOTH actions now
 import { toggleMyList, toggleLike } from '@/app/action';
 import { useSetAtom } from 'jotai';
-import { isModalOpenAtom, movieInModalAtom } from '@/store';
+import { isModalOpenAtom, movieInModalAtom, modalStateAtom } from '@/store';
 
 interface MovieCardProps {
   data: Movie;
@@ -23,6 +22,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
 }) => {
   const setIsOpen = useSetAtom(isModalOpenAtom);
   const setMovie = useSetAtom(movieInModalAtom);
+  const setModalState = useSetAtom(modalStateAtom);
 
   const [isPending, startTransition] = useTransition();
   
@@ -30,11 +30,21 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const [isAdded, setIsAdded] = useState(isFavorite);
   const [isThumbsUp, setIsThumbsUp] = useState(isLiked);
 
+  React.useEffect(() => {
+    setIsAdded(isFavorite || false);
+    setIsThumbsUp(isLiked || false);
+  }, [isFavorite, isLiked]);
+
   const handleOpenModal = () => {
-    setMovie(data);
+    setMovie(data as any);
+
+   setModalState({
+      isFavorite: isAdded, // isAdded é o estado local do check verde
+      isLiked: isThumbsUp  // isThumbsUp é o estado local do joinha
+    });
+    
     setIsOpen(true);
   };
-
   // HANDLER: Toggle My List
   const handleMyListClick = (e: React.MouseEvent) => {
     e.stopPropagation(); 
