@@ -5,8 +5,12 @@ import { X, Play, Plus, Volume2, VolumeX, Share2, Check, ThumbsUp, ThumbsDown } 
 import { useAtom, useAtomValue } from 'jotai';
 import { isModalOpenAtom, movieInModalAtom, modalStateAtom } from '@/store'; 
 import Image from 'next/image';
-import { toggleMyList, toggleLike, toggleDislike } from '@/app/action'; 
+import { toggleMyList, toggleLike, toggleDislike, getRecommendations } from '@/app/action'; 
 import { useRouter } from 'next/navigation'; 
+import MovieCard from './MovieCard'; 
+// We import 'Movie' from prisma client for typing, though 'any' is used in state
+// to handle potential relation inconsistencies during dev.
+import { Movie } from '@prisma/client';
 
 const InfoModal = () => {
   const router = useRouter(); 
@@ -23,6 +27,10 @@ const InfoModal = () => {
   const [isDisliked, setIsDisliked] = useState(false); 
   const [isPending, startTransition] = useTransition();
 
+  // Recommendations state
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+
+  // 1. Sync initial state (Like/MyList) on open
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => {
@@ -33,12 +41,26 @@ const InfoModal = () => {
     }
   }, [isOpen, initialModalState]);
 
+  // 2. Load recommendations (More Like This)
+  useEffect(() => {
+    async function loadData() {
+        if (movie?.id) {
+            const data = await getRecommendations(movie.id);
+            setRecommendations(data);
+        }
+    }
+    if (isOpen) {
+        loadData();
+    }
+  }, [movie, isOpen]);
+
   const handleClose = useCallback(() => {
     setIsVisible(false); 
     setTimeout(() => {
         setIsOpen(false);
         setMovie(null);
         setIsCopied(false);
+        setRecommendations([]); // Clear on close
     }, 300); 
   }, [setIsOpen, setMovie]);
 
@@ -90,19 +112,20 @@ const InfoModal = () => {
   if (!isOpen || !movie) return null;
 
   return (
-    <div onClick={handleClose} className="z-[100] transition duration-300 bg-black/80 flex justify-center items-start pt-24 overflow-x-hidden overflow-y-auto fixed inset-0">
+    <div onClick={handleClose} className="z-50 transition duration-300 bg-black/80 flex justify-center items-start pt-24 overflow-x-hidden overflow-y-auto fixed inset-0">
       <div className="relative w-full mx-4 md:mx-auto max-w-3xl rounded-md overflow-hidden mb-24">
         <div onClick={(e) => e.stopPropagation()} className={`${isVisible ? 'scale-100' : 'scale-0'} transform duration-300 relative flex-auto bg-zinc-900 drop-shadow-md rounded-md`}>
             
+            {/* --- MODAL HEADER (VIDEO/IMAGE) --- */}
             <div className="relative h-96">
-                <Image src={movie.thumbnailUrl} alt={movie.title} fill className="w-full h-full object-cover brightness-[60%]" />
+                <Image src={movie.thumbnailUrl} alt={movie.title} fill className="w-full h-full object-cover brightness-60" />
                 
-                {/* CLOSE BUTTON (Top Right) */}
+                {/* Close Button */}
                 <div onClick={handleClose} className="cursor-pointer absolute top-3 right-3 h-10 w-10 rounded-full bg-black/70 flex items-center justify-center hover:bg-zinc-800 transition z-50">
                     <X className="text-white w-6" />
                 </div>
 
-                {/* VOLUME BUTTON (Moved to Bottom Right Overlay) */}
+                {/* Volume Button */}
                 <div 
                     onClick={() => setIsMuted(!isMuted)}
                     className="cursor-pointer absolute bottom-10 right-10 h-10 w-10 rounded-full bg-black/50 border border-gray-500 flex items-center justify-center hover:bg-zinc-800 transition z-50"
@@ -110,81 +133,57 @@ const InfoModal = () => {
                     {isMuted ? <VolumeX className="text-white w-5" /> : <Volume2 className="text-white w-5" />}
                 </div>
 
+                {/* Title and Main Buttons */}
                 <div className="absolute bottom-[10%] left-10 w-[90%] md:w-[60%]">
                     <p className="text-white text-3xl md:text-4xl h-full lg:text-5xl font-bold mb-4">{movie.title}</p>
                     
-                    {/* ACTION BUTTONS ROW - Simplified and Aligned */}
                     <div className="flex flex-row items-center gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                        
-                        {/* PLAY */}
                         <button className="h-10 md:h-12 bg-white text-black font-bold px-6 rounded hover:bg-neutral-300 transition flex items-center justify-center gap-2 whitespace-nowrap">
-                             <Play className="w-5 h-5 text-black" fill="black" /> 
-                             Play
+                             <Play className="w-5 h-5 text-black" fill="black" /> Play
                         </button>
 
-                        {/* MY LIST */}
                         <button 
                             onClick={handleMyList}
                             className={`
-                                h-10 md:h-12 
-                                font-bold px-6 rounded border-2 flex items-center justify-center gap-2 transition whitespace-nowrap
-                                ${isFavorite 
-                                    ? 'bg-zinc-600 hover:bg-zinc-700 text-white border-zinc-600' 
-                                    : 'bg-zinc-600/60 hover:bg-zinc-600/80 text-white border-transparent'} 
+                                h-10 md:h-12 font-bold px-6 rounded border-2 flex items-center justify-center gap-2 transition whitespace-nowrap
+                                ${isFavorite ? 'bg-zinc-600 hover:bg-zinc-700 text-white border-zinc-600' : 'bg-zinc-600/60 hover:bg-zinc-600/80 text-white border-transparent'} 
                             `}
                         >
-                             {isFavorite ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                             My List
+                             {isFavorite ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />} My List
                         </button>
                         
-                        {/* ROUND BUTTONS GROUP */}
-                         <div 
-                            onClick={handleLike}
-                            className={`
-                                cursor-pointer w-10 h-10 md:w-12 md:h-12 flex-shrink-0
-                                rounded-full border-2 flex items-center justify-center transition
-                                ${isLiked ? 'border-green-500 bg-zinc-800' : 'border-gray-400 hover:border-white hover:bg-zinc-800'}
-                            `}
-                        >
-                            <ThumbsUp className={`w-5 h-5 ${isLiked ? 'text-green-500' : 'text-white'}`} />
+                        <div onClick={handleLike} className={`cursor-pointer w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-full border-2 flex items-center justify-center transition ${isLiked ? 'border-green-500 bg-zinc-800' : 'border-gray-400 hover:border-white hover:bg-zinc-800'}`}>
+                            <ThumbsUp className={`w-5 h-5 ${isLiked ? 'text-green-500' : 'text-white'}`} fill={isLiked ? "currentColor" : "none"} />
                         </div>
 
-                        <div 
-                            onClick={handleDislike}
-                            className={`
-                                cursor-pointer w-10 h-10 md:w-12 md:h-12 flex-shrink-0
-                                rounded-full border-2 flex items-center justify-center transition
-                                ${isDisliked ? 'border-red-500 bg-zinc-800' : 'border-gray-400 hover:border-white hover:bg-zinc-800'}
-                            `}
-                        >
+                        <div onClick={handleDislike} className={`cursor-pointer w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-full border-2 flex items-center justify-center transition ${isDisliked ? 'border-red-500 bg-zinc-800' : 'border-gray-400 hover:border-white hover:bg-zinc-800'}`}>
                             <ThumbsDown className={`w-5 h-5 ${isDisliked ? 'text-red-500' : 'text-white'}`} />
                         </div>
 
-                        <div 
-                            onClick={handleShare}
-                            className={`
-                                cursor-pointer w-10 h-10 md:w-12 md:h-12 flex-shrink-0
-                                rounded-full border-2 flex items-center justify-center transition
-                                ${isCopied ? 'border-green-500 bg-zinc-800' : 'border-gray-400 hover:border-white hover:bg-zinc-800'}
-                            `}
-                        >
+                        <div onClick={handleShare} className={`cursor-pointer w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-full border-2 flex items-center justify-center transition ${isCopied ? 'border-green-500 bg-zinc-800' : 'border-gray-400 hover:border-white hover:bg-zinc-800'}`}>
                             {isCopied ? <Check className="text-green-500 w-5 h-5" /> : <Share2 className="text-white w-5 h-5" />}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="px-12 py-8">
-                {/* DETAILS SECTION */}
+            {/* --- MODAL BODY (DETAILS) --- */}
+            {/* NOTE: Added pb-40 to give space at the bottom of the scroll */}
+            <div className="px-12 py-8 pb-40">
                 <div className="flex flex-col md:flex-row gap-8">
+                    
+                    {/* Left Column: Technical Info and Synopsis */}
                     <div className="w-full md:w-[70%] text-white">
                         <div className="flex items-center gap-4 mb-4">
-                            <p className="text-green-400 font-semibold">New {movie.releaseYear}</p>
+                            <p className="text-green-400 font-semibold">New {new Date().getFullYear()}</p>
+                            <p className="text-white font-light">{movie.releaseYear}</p>
                             <p className="text-white">{movie.duration}</p>
                             <div className="border border-gray-400 px-1 rounded text-[10px]">HD</div>
                         </div>
                         <p className="text-white text-lg leading-relaxed">{movie.description}</p>
                     </div>
+                    
+                    {/* Right Column: Cast and Genres */}
                     <div className="w-full md:w-[30%] text-white text-sm flex flex-col gap-2">
                          {movie.actors && movie.actors.length > 0 ? (
                             <p><span className="text-gray-500">Cast:</span> {movie.actors.map(a => a.fullName).join(', ')}</p>
@@ -196,7 +195,7 @@ const InfoModal = () => {
                     </div>
                 </div>
                 
-                {/* EPISODES LIST */}
+                {/* --- EPISODES SECTION --- */}
                 {movie.episodes && movie.episodes.length > 0 && (
                     <div className="mt-8 border-t border-zinc-700 pt-8">
                         <h3 className="text-white text-xl font-bold mb-4">Episodes ({movie.episodes.length})</h3>
@@ -204,7 +203,7 @@ const InfoModal = () => {
                             {movie.episodes.map((ep, index) => (
                                 <div key={ep.id} className="flex items-center gap-4 p-3 hover:bg-zinc-800 rounded cursor-pointer transition">
                                     <span className="text-gray-400 font-bold text-xl">{index + 1}</span>
-                                    <div className="w-32 h-20 bg-zinc-700 rounded relative overflow-hidden flex-shrink-0">
+                                    <div className="w-32 h-20 bg-zinc-700 rounded relative overflow-hidden shrink-0">
                                         <Image src={ep.thumbnailUrl || movie.thumbnailUrl} alt={ep.title} fill className="object-cover opacity-80" />
                                     </div>
                                     <div className="flex flex-col">
@@ -217,6 +216,27 @@ const InfoModal = () => {
                         </div>
                     </div>
                 )}
+
+                {/* --- MORE LIKE THIS SECTION --- */}
+                <div className="mt-8 border-t border-zinc-700 pt-8">
+                    <h3 className="text-white text-xl font-bold mb-4">
+                        More Like This
+                    </h3>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {recommendations.map((rec) => (
+                            <MovieCard 
+                                key={rec.id} 
+                                data={rec} 
+                            />
+                        ))}
+                    </div>
+                    
+                    {recommendations.length === 0 && (
+                        <p className="text-gray-500 text-sm">No similar titles found.</p>
+                    )}
+                </div>
+
             </div>
         </div>
       </div>
