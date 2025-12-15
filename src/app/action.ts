@@ -170,3 +170,39 @@ export async function toggleDislike(movieId: string) {
 
   revalidatePath("/");
 }
+
+// =========================================================
+// ACTION 4: RECOMMENDATION SYSTEM (More Like This)
+// =========================================================
+
+export async function getRecommendations(movieId: string) {
+  // 1. Find the current movie's tags
+  const currentMovie = await prisma.movie.findUnique({
+    where: { id: movieId },
+    include: { tags: true }
+  });
+
+  if (!currentMovie || currentMovie.tags.length === 0) {
+    return [];
+  }
+
+  // 2. Extract Tag IDs (e.g., ID for "Action", ID for "Comedy")
+  const tagIds = currentMovie.tags.map(tag => tag.id);
+
+  // 3. Find other movies that share at least one tag
+  const recommendations = await prisma.movie.findMany({
+    take: 6, // Limit to 6 suggestions
+    where: {
+      id: { not: movieId }, // Exclude the movie currently shown
+      tags: {
+        some: {
+          id: { in: tagIds } // Magic: "Where tag ID is in our list"
+        }
+      }
+    },
+    include: { tags: true, actors: true, episodes: true },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  return recommendations;
+}
