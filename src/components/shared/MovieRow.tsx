@@ -1,13 +1,19 @@
 import React from 'react';
-import { Movie } from '@prisma/client';
+// 1. IMPORTAMOS OS SUB-TIPOS NECESSÁRIOS
+import { Movie, Tag, Actor, Episode } from '@prisma/client';
 import MovieCard from './MovieCard';
+
+// 2. CRIAMOS A TIPAGEM RICA (IGUAL NO HERO)
+interface MovieWithDetails extends Movie {
+  tags: Tag[];
+  actors: Actor[];
+  episodes: Episode[];
+}
 
 interface MovieRowProps {
   title: string;
-  movies: Movie[];
-  // Receive the list of favorite IDs from the parent
+  movies: MovieWithDetails[];
   userFavorites?: string[];
-  // NEW: Receive the list of liked IDs from the parent
   userLikes?: string[];
 }
 
@@ -15,7 +21,7 @@ const MovieRow: React.FC<MovieRowProps> = ({
   title, 
   movies, 
   userFavorites = [], 
-  userLikes = [] // Default to empty array to avoid errors
+  userLikes = [] 
 }) => {
   return (
     <div className="px-4 md:px-12 mt-4 space-y-8">
@@ -29,9 +35,7 @@ const MovieRow: React.FC<MovieRowProps> = ({
             <MovieCard 
                 key={movie.id} 
                 data={movie} 
-                // Check if THIS movie ID exists in the user's favorites list
                 isFavorite={userFavorites.includes(movie.id)}
-                // NEW: Check if THIS movie ID exists in the user's likes list
                 isLiked={userLikes.includes(movie.id)}
             />
           ))}

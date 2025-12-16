@@ -1,9 +1,20 @@
 import Hero from "@/components/shared/Hero";
 import MovieRow from "@/components/shared/MovieRow";
-import { PrismaClient, Movie } from "@prisma/client"; 
+import InfoModal from "@/components/shared/InfoModal"; 
+// 1. ADICIONEI AS IMPORTAÇÕES DE TAG, ACTOR E EPISODE
+import { PrismaClient, Movie, Tag, Actor, Episode } from "@prisma/client"; 
 import { currentUser } from "@clerk/nextjs/server"; 
 
 const prisma = new PrismaClient();
+
+// 2. DEFINI A INTERFACE IGUAL FIZEMOS NO MOVIEROW
+interface MovieWithDetails extends Movie {
+  tags: Tag[];
+  actors: Actor[];
+  episodes: Episode[];
+}
+
+export const revalidate = 0;
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ search?: string }> }) {
   
@@ -12,9 +23,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   
   const user = await currentUser();
   
-  let myListMovies: Movie[] = [];
+  // 3. CORRIGI A TIPAGEM DA VARIÁVEL: De 'Movie[]' para 'MovieWithDetails[]'
+  let myListMovies: MovieWithDetails[] = [];
   let favoriteIds: string[] = [];
-  // NEW: Array to store IDs of liked movies
   let likedIds: string[] = [];
 
   if (user) {
@@ -32,15 +43,28 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
       }
     });
     
-    myListMovies = listData.map((item) => item.movie);
+    // O TypeScript agora aceita isso pois a query inclui tudo
+    myListMovies = listData.map((item) => item.movie) as MovieWithDetails[];
     favoriteIds = listData.map((item) => item.movieId);
 
-    // 2. NEW: Fetch Likes Data
+    // 2. Fetch Likes Data
     const likesData = await prisma.like.findMany({
       where: { userId: user.id },
     });
     likedIds = likesData.map((item) => item.movieId);
   }
+
+  // --- HERO LOGIC ---
+  const heroMovie = await prisma.movie.findFirst({
+    where: { 
+        title: 'Big Buck Bunny' // Usando Elephants Dream que tem vídeo certo
+    },
+    include: { 
+        tags: true, 
+        actors: true, 
+        episodes: true 
+    } 
+  });
 
   const movies = await prisma.movie.findMany({
     where: {
@@ -61,16 +85,18 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 
   return (
     <main className="relative bg-zinc-900 min-h-screen pb-40">
-      {!query && <Hero />}
+      
+      <InfoModal />
+
+      {!query && <Hero data={heroMovie} />}
       
       <div className={`pb-40 ${query ? 'pt-40' : 'pt-0'}`}>
         
-        {/* Pass likedIds to all rows */}
         <MovieRow 
             title={query ? `Results for "${query}"` : "Trending Now"} 
             movies={movies} 
             userFavorites={favoriteIds}
-            userLikes={likedIds} // <--- PASS HERE
+            userLikes={likedIds} 
         />
         
         {!query && myListMovies.length > 0 && (
@@ -78,11 +104,26 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
             title="My List" 
             movies={myListMovies} 
             userFavorites={favoriteIds}
-            userLikes={likedIds} // <--- PASS HERE
+            userLikes={likedIds} 
           />
         )}
         
-        {!query && <MovieRow title="New Releases" movies={movies} userFavorites={favoriteIds} userLikes={likedIds} />}
+        {!query && (
+            <>
+                <MovieRow 
+                    title="Sci-Fi & Fantasy" 
+                    movies={await prisma.movie.findMany({ where: { tags: { some: { name: 'Sci-Fi' } } }, include: { tags: true, actors: true, episodes: true } })} 
+                    userFavorites={favoriteIds} 
+                    userLikes={likedIds} 
+                />
+                <MovieRow 
+                    title="Action Movies" 
+                    movies={await prisma.movie.findMany({ where: { tags: { some: { name: 'Action' } } }, include: { tags: true, actors: true, episodes: true } })} 
+                    userFavorites={favoriteIds} 
+                    userLikes={likedIds} 
+                />
+            </>
+        )}
 
         {query && movies.length === 0 && (
             <div className="flex flex-col items-center justify-center mt-20 text-gray-400">
