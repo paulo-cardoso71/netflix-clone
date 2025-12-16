@@ -1,11 +1,11 @@
 import Hero from "@/components/shared/Hero";
 import MovieRow from "@/components/shared/MovieRow";
-import { PrismaClient, Movie } from "@prisma/client";
+import InfoModal from "@/components/shared/InfoModal"; // <--- IMPORTANT
+import { PrismaClient } from "@prisma/client";
 import { currentUser } from "@clerk/nextjs/server"; 
 
 const prisma = new PrismaClient();
 
-// Disable caching to ensure real-time updates (Optional, mostly for dev)
 export const dynamic = 'force-dynamic';
 
 export default async function TVPage() {
@@ -22,10 +22,17 @@ export default async function TVPage() {
     likedIds = likesData.map((item) => item.movieId);
   }
 
-  // 1. Fetch ONLY TV Shows (Movies that have episodes)
+  // 1. Fetch a specific TV Show for the Hero
+  // We use Sintel because it has episodes in your DB seed
+  const heroMovie = await prisma.movie.findFirst({
+    where: { title: 'Sintel' }, 
+    include: { tags: true, actors: true, episodes: true }
+  });
+
+  // 2. Fetch ONLY TV Shows (Movies that have episodes)
   const tvShows = await prisma.movie.findMany({
     where: {
-      episodes: { some: {} } // <--- THE FILTER MAGIC
+      episodes: { some: {} } 
     },
     orderBy: { createdAt: 'desc' },
     include: {
@@ -35,26 +42,28 @@ export default async function TVPage() {
     }
   });
 
-  // 2. We can categorize them by Genre for the rows
+  // 3. Categories
   const actionShows = tvShows.filter(m => m.tags.some(t => t.name === 'Action'));
   const dramaShows = tvShows.filter(m => m.tags.some(t => t.name === 'Drama'));
+  const animeShows = tvShows.filter(m => m.tags.some(t => t.name === 'Anime')); // Added Anime
 
   return (
     <main className="relative bg-zinc-900 min-h-screen pb-40">
-      {/* We can reuse the generic Hero or create a specific one. Using generic for now. */}
-      <Hero /> 
+      {/* Modal is required here */}
+      <InfoModal />
+
+      {/* Pass real data to Hero */}
+      <Hero data={heroMovie} /> 
       
       <div className="pb-40 pt-0">
         
-        {/* Main List */}
         <MovieRow 
-            title="TV Shows" 
+            title="All TV Shows" 
             movies={tvShows} 
             userFavorites={favoriteIds}
             userLikes={likedIds}
         />
 
-        {/* Categories */}
         {actionShows.length > 0 && (
             <MovieRow 
                 title="Action Series" 
@@ -68,6 +77,15 @@ export default async function TVPage() {
             <MovieRow 
                 title="Drama Series" 
                 movies={dramaShows} 
+                userFavorites={favoriteIds}
+                userLikes={likedIds}
+            />
+        )}
+
+        {animeShows.length > 0 && (
+            <MovieRow 
+                title="Anime Series" 
+                movies={animeShows} 
                 userFavorites={favoriteIds}
                 userLikes={likedIds}
             />
