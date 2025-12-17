@@ -154,12 +154,12 @@ async function main() {
   // PARTE 2: BLOCKBUSTERS (CORRIGIDOS E MANTIDOS)
   // ==========================================================
 
-  // INTERSTELLAR [CORRIGIDO - Link TMDB quebrado -> Wikimedia]
+  // INTERSTELLAR 
   await prisma.movie.create({
     data: {
       title: "Interstellar",
       description: "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival.",
-      thumbnailUrl: "/images/interstellar.jpg", // Imagem Galáxia NASA
+      thumbnailUrl: "/images/interstellar.webp",
       videoUrl: VIDEOS.TEARS,
       duration: "2h 49m",
       rating: 9.2,
@@ -168,7 +168,7 @@ async function main() {
     }
   });
 
-  // INCEPTION [MANTIDO - Você disse que funciona]
+  // INCEPTION 
   await prisma.movie.create({
     data: {
       title: "Inception",
@@ -187,7 +187,7 @@ async function main() {
     data: {
       title: "The Dark Knight",
       description: "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
-      thumbnailUrl: "/images/dark-knight.jpg",
+      thumbnailUrl: "/images/dark-knight.webp",
       videoUrl: VIDEOS.TEARS,
       duration: "2h 32m",
       rating: 9.0,
@@ -196,12 +196,12 @@ async function main() {
     }
   });
 
-  // AVENGERS ENDGAME [MANTIDO - Você disse que funciona]
+  // AVENGERS ENDGAME
   await prisma.movie.create({
     data: {
       title: "Avengers: Endgame",
       description: "After the devastating events of Infinity War, the universe is in ruins. With the help of remaining allies, the Avengers assemble once more in order to reverse Thanos' actions.",
-      thumbnailUrl: "https://image.tmdb.org/t/p/original/or06FN3Dka5tukK1e9sl16pB3iy.jpg",
+      thumbnailUrl: "/images/endgame.webp",
       videoUrl: VIDEOS.TEARS,
       duration: "3h 1m",
       rating: 8.9,
@@ -210,12 +210,12 @@ async function main() {
     }
   });
 
-  // SPIDER-MAN [MANTIDO - Você disse que funciona]
+  // SPIDER-MAN 
   await prisma.movie.create({
     data: {
       title: "Spider-Man: Across the Spider-Verse",
       description: "Miles Morales catapults across the Multiverse, where he encounters a team of Spider-People charged with protecting its very existence.",
-      thumbnailUrl: "https://image.tmdb.org/t/p/original/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg",
+      thumbnailUrl: "/images/spiderverse.webp",
       videoUrl: VIDEOS.SINTEL,
       duration: "2h 20m",
       rating: 9.1,
@@ -224,12 +224,12 @@ async function main() {
     }
   });
 
-  // SUPERBAD [CORRIGIDO - Link TMDB quebrado -> Wikimedia]
+  // SUPERBAD 
   await prisma.movie.create({
     data: {
       title: "Superbad",
       description: "Two co-dependent high school seniors are forced to deal with separation anxiety after their plan to stage a booze-soaked party goes awry.",
-      thumbnailUrl: "/images/superbad.jpg", // Copo vermelho clássico
+      thumbnailUrl: "/images/superbad.webp", // Copo vermelho clássico
       videoUrl: VIDEOS.BUNNY,
       duration: "1h 53m",
       rating: 7.6,
@@ -253,12 +253,12 @@ async function main() {
     }
   });
 
-  // SPIRITED AWAY [CORRIGIDO - Link TMDB quebrado -> Wikimedia]
+  // SPIRITED AWAY
   await prisma.movie.create({
     data: {
       title: "Spirited Away",
       description: "A young girl, Chihiro, becomes trapped in a strange new world of spirits. When her parents undergo a mysterious transformation, she must call upon the courage she never knew she had.",
-      thumbnailUrl: "/images/spirited-away.jpg", 
+      thumbnailUrl: "/images/spirited-away.webp", 
       videoUrl: VIDEOS.SINTEL,
       duration: "2h 5m",
       rating: 8.6,
@@ -267,12 +267,12 @@ async function main() {
     }
   });
 
-  // YOUR NAME [MANTIDO - Você disse que funciona]
+  // YOUR NAME 
   await prisma.movie.create({
     data: {
       title: "Your Name",
       description: "Two strangers find themselves linked in a bizarre way. When a connection forms, will distance be the only thing to keep them apart?",
-      thumbnailUrl: "https://image.tmdb.org/t/p/original/q719jXXEzOoYaps6babgKnONONX.jpg",
+      thumbnailUrl: "/images/your-name.webp",
       videoUrl: VIDEOS.SINTEL,
       duration: "1h 52m",
       rating: 8.4,
@@ -281,12 +281,12 @@ async function main() {
     }
   });
 
-  // THE GODFATHER [MANTIDO - Você disse que funciona]
+  // THE GODFATHER 
   await prisma.movie.create({
     data: {
       title: "The Godfather",
       description: "Spanning the years 1945 to 1955, a chronicle of the fictional Italian-American Corleone crime family.",
-      thumbnailUrl: "https://image.tmdb.org/t/p/original/3bhkrj58Vtu7enYsRolD1fZdja1.jpg",
+      thumbnailUrl: "/images/godfather.webp",
       videoUrl: VIDEOS.ELEPHANT,
       duration: "2h 55m",
       rating: 9.2,
