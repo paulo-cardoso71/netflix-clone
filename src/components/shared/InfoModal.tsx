@@ -8,7 +8,6 @@ import Image from 'next/image';
 import { toggleMyList, toggleLike, toggleDislike, getRecommendations } from '@/app/action'; 
 import { useRouter } from 'next/navigation'; 
 import MovieCard from './MovieCard'; 
-import { Movie } from '@prisma/client';
 
 const InfoModal = () => {
   const router = useRouter(); 
@@ -65,6 +64,13 @@ const InfoModal = () => {
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
+
+  const handlePlay = () => {
+    if (movie?.id) {
+        router.push(`/watch/${movie.id}`);
+        handleClose(); // Opcional: fecha o modal ao navegar
+    }
+  };
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -139,7 +145,10 @@ const InfoModal = () => {
                     <div className="flex flex-row items-center gap-2 md:gap-4 flex-wrap">
                         
                         {/* Play Button */}
-                        <button className="h-8 md:h-12 bg-white text-black font-bold px-3 md:px-6 rounded hover:bg-neutral-300 transition flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap text-xs md:text-base">
+                       <button 
+                            onClick={handlePlay} 
+                            className="h-8 md:h-12 bg-white text-black font-bold px-3 md:px-6 rounded hover:bg-neutral-300 transition flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap text-xs md:text-base"
+                        >
                              <Play className="w-3 h-3 md:w-5 md:h-5 text-black" fill="black" /> Play
                         </button>
 
@@ -203,11 +212,27 @@ const InfoModal = () => {
                         <h3 className="text-white text-lg md:text-xl font-bold mb-4">Episodes ({movie.episodes.length})</h3>
                         <div className="grid gap-4">
                             {movie.episodes.map((ep, index) => (
-                                <div key={ep.id} className="flex items-center gap-4 p-3 hover:bg-zinc-800 rounded cursor-pointer transition">
-                                    <span className="text-gray-400 font-bold text-lg md:text-xl">{index + 1}</span>
-                                    <div className="w-24 h-16 md:w-32 md:h-20 bg-zinc-700 rounded relative overflow-hidden shrink-0">
-                                        <Image src={ep.thumbnailUrl || movie.thumbnailUrl} alt={ep.title} fill className="object-cover opacity-80" />
-                                    </div>
+                                <div key={ep.id} onClick={() => {
+                        router.push(`/watch/${movie.id}?episodeId=${ep.id}`);
+                        handleClose();
+                    }}className="flex items-center gap-4 p-3 hover:bg-zinc-800 rounded cursor-pointer transition group">
+                                    <span className="text-gray-400 font-bold text-lg md:text-xl group-hover:text-white transition">{index + 1}</span>
+                                   <div className="w-24 h-16 md:w-32 md:h-20 bg-zinc-700 rounded relative overflow-hidden shrink-0 border border-transparent group-hover:border-white/50 transition">
+        <Image 
+            src={ep.thumbnailUrl || movie.thumbnailUrl} 
+            alt={ep.title} 
+            fill 
+            className="object-cover opacity-80 group-hover:opacity-100 transition duration-300" 
+        />
+        
+        {/* */}
+        {/**/}
+        <div className="absolute inset-0 flex items-center justify-center">
+            <div className="bg-black/50 rounded-full p-2 border-2 border-white/80 opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition duration-300 shadow-lg">
+                <Play className="w-3 h-3 md:w-4 md:h-4 text-white" fill="white" />
+            </div>
+        </div>
+    </div>
                                     <div className="flex flex-col">
                                         <h4 className="text-white font-bold text-sm md:text-base">{ep.title}</h4>
                                         <p className="text-gray-400 text-xs md:text-sm mt-1 line-clamp-2">{ep.description}</p>

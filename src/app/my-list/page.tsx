@@ -1,10 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"; // <--- MUDANÇA: Importando da lib
 import { currentUser } from "@clerk/nextjs/server"; 
 import { redirect } from "next/navigation";
 import Navbar from "@/components/shared/Navbar";
 import MovieCard from "@/components/shared/MovieCard";
 
-const prisma = new PrismaClient();
+// REMOVIDO: const prisma = new PrismaClient();
+
 // Force dynamic rendering to ensure the list is always up-to-date
 export const dynamic = 'force-dynamic';
 

@@ -1,10 +1,8 @@
 import Hero from "@/components/shared/Hero";
 import MovieRow from "@/components/shared/MovieRow";
-import InfoModal from "@/components/shared/InfoModal"; // <--- IMPORTANT
-import { PrismaClient } from "@prisma/client";
+import InfoModal from "@/components/shared/InfoModal"; 
+import { prisma } from "@/lib/prisma"; // <--- USANDO A LIB CERTA AGORA
 import { currentUser } from "@clerk/nextjs/server"; 
-
-const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 
@@ -23,16 +21,16 @@ export default async function TVPage() {
   }
 
   // 1. Fetch a specific TV Show for the Hero
-  // We use Sintel because it has episodes in your DB seed
+  // MUDANÇA AQUI: Trocamos 'Sintel' por 'Wayne'
   const heroMovie = await prisma.movie.findFirst({
-    where: { title: 'Sintel' }, 
+    where: { title: 'Wayne' }, 
     include: { tags: true, actors: true, episodes: true }
   });
 
   // 2. Fetch ONLY TV Shows (Movies that have episodes)
   const tvShows = await prisma.movie.findMany({
     where: {
-      episodes: { some: {} } 
+      episodes: { some: {} } // Pega tudo que tem pelo menos 1 episódio
     },
     orderBy: { createdAt: 'desc' },
     include: {
@@ -45,14 +43,13 @@ export default async function TVPage() {
   // 3. Categories
   const actionShows = tvShows.filter(m => m.tags.some(t => t.name === 'Action'));
   const dramaShows = tvShows.filter(m => m.tags.some(t => t.name === 'Drama'));
-  const animeShows = tvShows.filter(m => m.tags.some(t => t.name === 'Anime')); // Added Anime
+  const animeShows = tvShows.filter(m => m.tags.some(t => t.name === 'Anime'));
 
   return (
     <main className="relative bg-zinc-900 min-h-screen pb-40">
-      {/* Modal is required here */}
       <InfoModal />
 
-      {/* Pass real data to Hero */}
+      {/* O Hero agora vai mostrar Wayne */}
       <Hero data={heroMovie} /> 
       
       <div className="pb-40 pt-0">
@@ -81,7 +78,8 @@ export default async function TVPage() {
                 userLikes={likedIds}
             />
         )}
-
+        
+        {/* Se não tiver animes cadastrados com episódios, essa lista apenas não aparece */}
         {animeShows.length > 0 && (
             <MovieRow 
                 title="Anime Series" 

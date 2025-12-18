@@ -2,15 +2,18 @@
 
 import { UserButton, SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import Link from "next/link"; 
-import { Search, Bell, ChevronDown } from "lucide-react"; // Import ChevronDown
+import { Search, Bell, ChevronDown } from "lucide-react"; 
 import NavbarItem from "./NavbarItem"; 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation"; 
-import MobileMenu from "./MobileMenu"; // Importe o componente novo
+import MobileMenu from "./MobileMenu"; 
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const pathname = usePathname();
   
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,6 +57,10 @@ export default function Navbar() {
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery, router]);
+
+  if (pathname?.startsWith('/watch')) {
+    return null;
+  }
 
   return (
     <nav className="fixed top-0 w-full z-40 flex items-center justify-between px-4 py-4 md:px-10 bg-gradient-to-b from-black/80 to-transparent transition-all duration-300 hover:bg-black/80">
