@@ -1,10 +1,11 @@
 import Hero from "@/components/shared/Hero";
 import MovieRow from "@/components/shared/MovieRow";
-import InfoModal from "@/components/shared/InfoModal"; // <--- IMPORTANT: Modal needed here
-import { PrismaClient } from "@prisma/client";
+import InfoModal from "@/components/shared/InfoModal"; 
+import { prisma } from "@/lib/prisma"; // <--- MUDANÇA: Importando da lib
 import { currentUser } from "@clerk/nextjs/server"; 
 
-const prisma = new PrismaClient();
+// REMOVIDO: const prisma = new PrismaClient();
+
 export const dynamic = 'force-dynamic';
 
 export default async function MoviesPage() {
@@ -21,9 +22,10 @@ export default async function MoviesPage() {
     likedIds = likesData.map((item) => item.movieId);
   }
 
-  // 1. Fetch a specific Movie for the Hero (So 'More Info' works)
+  // 1. Fetch a specific Movie for the Hero
+  // DICA: Se "Elephants Dream" não existir no seed, troque por um filme que você tem certeza, tipo "Inception"
   const heroMovie = await prisma.movie.findFirst({
-    where: { title: 'Elephants Dream' }, // You can pick any movie you want here
+    where: { title: 'Elephants Dream' }, 
     include: { tags: true, actors: true, episodes: true }
   });
 
@@ -48,10 +50,8 @@ export default async function MoviesPage() {
 
   return (
     <main className="relative bg-zinc-900 min-h-screen pb-40">
-      {/* The Modal must be present to listen to the open event */}
       <InfoModal />
 
-      {/* Pass real data to Hero so 'More Info' has a real ID to work with */}
       <Hero data={heroMovie} /> 
       
       <div className="pb-40 pt-0">

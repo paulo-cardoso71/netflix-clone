@@ -1,10 +1,11 @@
 'use server';
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
-const prisma = new PrismaClient();
+
+
 
 // =========================================================
 // ACTION 1: MY LIST (Favorites)
