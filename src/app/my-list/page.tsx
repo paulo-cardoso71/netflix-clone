@@ -1,10 +1,8 @@
-import { prisma } from "@/lib/prisma"; // <--- MUDANÇA: Importando da lib
+import { prisma } from "@/lib/prisma"; 
 import { currentUser } from "@clerk/nextjs/server"; 
 import { redirect } from "next/navigation";
 import Navbar from "@/components/shared/Navbar";
 import MovieCard from "@/components/shared/MovieCard";
-
-// REMOVIDO: const prisma = new PrismaClient();
 
 // Force dynamic rendering to ensure the list is always up-to-date
 export const dynamic = 'force-dynamic';
@@ -16,7 +14,7 @@ export default async function MyListPage() {
     return redirect("/"); // Redirect to home if not logged in
   }
 
-  // 1. Fetch ONLY the movies present in the user's personal list
+  // Fetch ONLY the movies present in the user's personal list
   const myListData = await prisma.myList.findMany({
     where: { userId: user.id },
     include: {
@@ -61,7 +59,7 @@ export default async function MyListPage() {
                         <MovieCard 
                             key={movie.id} 
                             data={movie} 
-                            isFavorite={true} // Since it is on this page, it is definitely a favorite
+                            isFavorite={true} // Since it is on this page, it is  a favorite
                             isLiked={likedIds.includes(movie.id)}
                         />
                     ))}

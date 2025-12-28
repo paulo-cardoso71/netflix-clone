@@ -1,19 +1,19 @@
 import Hero from "@/components/shared/Hero";
 import MovieRow from "@/components/shared/MovieRow";
 import InfoModal from "@/components/shared/InfoModal"; 
-import Navbar from "@/components/shared/Navbar"; // Não esqueça a Navbar
-import { prisma } from "@/lib/prisma"; // Usando a lib correta (Singleton)
+import Navbar from "@/components/shared/Navbar"; 
+import { prisma } from "@/lib/prisma"; // Using the correct lib (Singleton)
 import { currentUser } from "@clerk/nextjs/server"; 
 import { Movie, Tag, Actor, Episode } from '@prisma/client';
 
-// Interface para TypeScript não reclamar
+// Type definition to satisfy TypeScript
 interface MovieWithDetails extends Movie {
   tags: Tag[];
   actors: Actor[];
   episodes: Episode[];
 }
 
-export const revalidate = 0; // Garante dados frescos (Dynamic)
+export const revalidate = 0; // Ensure fresh data (Dynamic)
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ search?: string }> }) {
   const params = await searchParams;
@@ -39,7 +39,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     likedIds = likesData.map((item) => item.movieId);
   }
 
-  // --- HERO LOGIC (Aleatório) ---
+  // --- HERO LOGIC ---
   const movieCount = await prisma.movie.count();
   const randomIndex = Math.floor(Math.random() * movieCount);
   const randomMovies = await prisma.movie.findMany({
@@ -47,16 +47,16 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     skip: randomIndex,
     include: { tags: true, actors: true, episodes: true } 
   });
-  // Se quiser forçar Wayne para testar, troque randomMovies[0] por um findFirst({ where: { title: 'Wayne' }})
+  // To force Wayne for testing, swap randomMovies[0] with findFirst({ where: { title: 'Wayne' }})
   const heroMovie = randomMovies[0];
 
-  // --- SEÇÕES DA HOME ---
+  // --- HOME SECTIONS ---
 
-  // 1. Filmes (Sem Episódios)
+  // 1. Movies (No Episodes)
   const movies = await prisma.movie.findMany({
     where: {
-      episodes: { none: {} }, // Apenas filmes
-      OR: [ // Busca funciona aqui
+      episodes: { none: {} }, // Movies only
+      OR: [ // Search logic works here
         { title: { contains: query} }, 
         { description: { contains: query } },
         { tags: { some: { name: { contains: query } } } }
@@ -67,11 +67,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     include: { tags: true, actors: true, episodes: true }
   });
 
-  // 2. Séries (Com Episódios) - SEPARAÇÃO PEDIDA
+  // 2. Series (With Episodes)
   const tvShows = await prisma.movie.findMany({
     where: {
-      episodes: { some: {} }, // Apenas séries
-      // Se tiver busca, filtra também
+      episodes: { some: {} }, // Series only
+      // Apply search filter if query exists
       OR: query ? [
         { title: { contains: query} }, 
         { description: { contains: query } }
@@ -82,8 +82,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     include: { tags: true, actors: true, episodes: true }
   });
 
-  // 3. Categorias (Filtros manuais nos filmes carregados)
-  // Nota: Para produção real, seria melhor fazer queries separadas no banco, mas assim funciona bem agora.
+  // 3. Categories (Manual filtering on loaded movies)
+  // Note: For real production, separate DB queries are better, but this works for now.
   const actionMovies = await prisma.movie.findMany({ 
       where: { tags: { some: { name: 'Action' } }, episodes: { none: {} } },
       take: 20,
@@ -101,22 +101,22 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
       <Navbar />
       <InfoModal />
 
-      {/* Só mostra o Hero se NÃO tiver busca digitada */}
+      {/* Only show Hero if NO search query */}
       {!query && <Hero data={heroMovie} />}
       
       <div className={`pb-40 ${query ? 'pt-40' : 'pt-0'} space-y-8`}>
         
-        {/* Se tiver busca, mostra resultados gerais. Se não, mostra seções organizadas */}
+        {/* If searching, show general results. Otherwise, show organized sections */}
         {query ? (
              <MovieRow 
                 title={`Results for "${query}"`} 
-                movies={[...movies, ...tvShows]} // Junta filmes e séries na busca
+                movies={[...movies, ...tvShows]} // Combine movies and series for search
                 userFavorites={favoriteIds}
                 userLikes={likedIds} 
             />
         ) : (
             <>
-                {/* Minha Lista */}
+                {/* My List */}
                 {myListMovies.length > 0 && (
                   <MovieRow 
                     title="My List" 
@@ -126,7 +126,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
                   />
                 )}
 
-                {/* Filmes Recentes */}
+                {/* Trending Movies */}
                 <MovieRow 
                     title="Trending Movies" 
                     movies={movies} 
@@ -134,7 +134,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
                     userLikes={likedIds} 
                 />
 
-                {/* Séries Recentes - AQUI ESTÁ SUA NOVA SEÇÃO */}
+                {/* Trending Series - New Section */}
                 {tvShows.length > 0 && (
                     <MovieRow 
                         title="TV Shows & Series" 
@@ -144,7 +144,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
                     />
                 )}
 
-                {/* Categorias */}
+                {/* Categories */}
                 <MovieRow 
                     title="Sci-Fi & Fantasy" 
                     movies={scifiMovies} 
@@ -161,7 +161,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
             </>
         )}
         
-        {/* Mensagem de "Não encontrado" */}
+        {/* "Not Found" Message */}
         {query && movies.length === 0 && tvShows.length === 0 && (
             <div className="flex flex-col items-center justify-center mt-20 text-gray-400">
                 <p className="text-xl">Your search for &quot;{query}&quot; did not have any matches.</p>

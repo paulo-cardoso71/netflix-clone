@@ -1,8 +1,15 @@
 import Hero from "@/components/shared/Hero";
 import MovieRow from "@/components/shared/MovieRow";
 import InfoModal from "@/components/shared/InfoModal"; 
-import { prisma } from "@/lib/prisma"; // <--- USANDO A LIB CERTA AGORA
+import { prisma } from "@/lib/prisma"; 
 import { currentUser } from "@clerk/nextjs/server"; 
+import { Movie, Tag, Actor, Episode } from '@prisma/client';
+
+interface MovieWithDetails extends Movie {
+  tags: Tag[];
+  actors: Actor[];
+  episodes: Episode[];
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -20,17 +27,16 @@ export default async function TVPage() {
     likedIds = likesData.map((item) => item.movieId);
   }
 
-  // 1. Fetch a specific TV Show for the Hero
-  // MUDANÇA AQUI: Trocamos 'Sintel' por 'Wayne'
+  // Fetch featured TV Show for Hero
   const heroMovie = await prisma.movie.findFirst({
     where: { title: 'Wayne' }, 
     include: { tags: true, actors: true, episodes: true }
   });
 
-  // 2. Fetch ONLY TV Shows (Movies that have episodes)
+  // Fetch All TV Shows (Movies with episodes)
   const tvShows = await prisma.movie.findMany({
     where: {
-      episodes: { some: {} } // Pega tudo que tem pelo menos 1 episódio
+      episodes: { some: {} } 
     },
     orderBy: { createdAt: 'desc' },
     include: {
@@ -40,7 +46,7 @@ export default async function TVPage() {
     }
   });
 
-  // 3. Categories
+  // Filter by Category
   const actionShows = tvShows.filter(m => m.tags.some(t => t.name === 'Action'));
   const dramaShows = tvShows.filter(m => m.tags.some(t => t.name === 'Drama'));
   const animeShows = tvShows.filter(m => m.tags.some(t => t.name === 'Anime'));
@@ -49,14 +55,13 @@ export default async function TVPage() {
     <main className="relative bg-zinc-900 min-h-screen pb-40">
       <InfoModal />
 
-      {/* O Hero agora vai mostrar Wayne */}
       <Hero data={heroMovie} /> 
       
-      <div className="pb-40 pt-0">
+      <div className="pb-40 pt-0 space-y-8">
         
         <MovieRow 
             title="All TV Shows" 
-            movies={tvShows} 
+            movies={tvShows as MovieWithDetails[]} 
             userFavorites={favoriteIds}
             userLikes={likedIds}
         />
@@ -64,7 +69,7 @@ export default async function TVPage() {
         {actionShows.length > 0 && (
             <MovieRow 
                 title="Action Series" 
-                movies={actionShows} 
+                movies={actionShows as MovieWithDetails[]} 
                 userFavorites={favoriteIds}
                 userLikes={likedIds}
             />
@@ -73,17 +78,16 @@ export default async function TVPage() {
         {dramaShows.length > 0 && (
             <MovieRow 
                 title="Drama Series" 
-                movies={dramaShows} 
+                movies={dramaShows as MovieWithDetails[]} 
                 userFavorites={favoriteIds}
                 userLikes={likedIds}
             />
         )}
         
-        {/* Se não tiver animes cadastrados com episódios, essa lista apenas não aparece */}
         {animeShows.length > 0 && (
             <MovieRow 
                 title="Anime Series" 
-                movies={animeShows} 
+                movies={animeShows as MovieWithDetails[]} 
                 userFavorites={favoriteIds}
                 userLikes={likedIds}
             />

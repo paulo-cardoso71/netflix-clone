@@ -7,7 +7,6 @@ import { isModalOpenAtom, movieInModalAtom, modalStateAtom } from '@/store';
 import Image from 'next/image';
 import { toggleMyList, toggleLike, toggleDislike, getRecommendations } from '@/app/action'; 
 import { useRouter } from 'next/navigation'; 
-import MovieCard from './MovieCard'; 
 
 const InfoModal = () => {
   const router = useRouter(); 
@@ -26,6 +25,7 @@ const InfoModal = () => {
 
   const [recommendations, setRecommendations] = useState<any[]>([]);
 
+  // Sync local state with global atom state when modal opens
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => {
@@ -36,6 +36,7 @@ const InfoModal = () => {
     }
   }, [isOpen, initialModalState]);
 
+  // Load recommendations when movie changes
   useEffect(() => {
     async function loadData() {
         if (movie?.id) {
@@ -58,6 +59,7 @@ const InfoModal = () => {
     }, 300); 
   }, [setIsOpen, setMovie]);
 
+  // Animation effect on open
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => { setIsVisible(true); }, 10);
@@ -68,7 +70,7 @@ const InfoModal = () => {
   const handlePlay = () => {
     if (movie?.id) {
         router.push(`/watch/${movie.id}`);
-        handleClose(); // Opcional: fecha o modal ao navegar
+        handleClose();
     }
   };
 
@@ -117,16 +119,16 @@ const InfoModal = () => {
       <div className="relative w-full mx-4 md:mx-auto max-w-3xl rounded-md overflow-hidden mb-24">
         <div onClick={(e) => e.stopPropagation()} className={`${isVisible ? 'scale-100' : 'scale-0'} transform duration-300 relative flex-auto bg-zinc-900 drop-shadow-md rounded-md`}>
             
-            {/* --- HEADER (IMAGEM) --- */}
+            {/* --- HEADER (IMAGE) --- */}
             <div className="relative h-96">
                 <Image src={movie.thumbnailUrl} alt={movie.title} fill className="w-full h-full object-cover brightness-60" />
                 
-                {/* Fechar */}
+                {/* Close Button */}
                 <div onClick={handleClose} className="cursor-pointer absolute top-3 right-3 h-8 w-8 md:h-10 md:w-10 rounded-full bg-black/70 flex items-center justify-center hover:bg-zinc-800 transition z-50">
                     <X className="text-white w-4 md:w-6" />
                 </div>
 
-                {/* Volume - Ajustado para não bater no texto no celular */}
+                {/* Volume Control - Adjusted to avoid overlap on mobile */}
                 <div 
                     onClick={() => setIsMuted(!isMuted)}
                     className="hidden md:flex cursor-pointer absolute bottom-28 md:bottom-10 right-4 md:right-10 h-8 w-8 md:h-10 md:w-10 rounded-full bg-black/50 border border-gray-500 flex items-center justify-center hover:bg-zinc-800 transition z-50"
@@ -134,14 +136,14 @@ const InfoModal = () => {
                     {isMuted ? <VolumeX className="text-white w-4 md:w-5" /> : <Volume2 className="text-white w-4 md:w-5" />}
                 </div>
 
-                {/* Container de Título e Botões */}
+                {/* Title and Buttons Container */}
                 <div className="absolute bottom-4 left-4 w-full md:bottom-[10%] md:left-10 md:w-[60%]">
-                    {/* Título: Menor no mobile */}
+                    {/* Title: Smaller on mobile */}
                     <p className="text-white text-xl md:text-3xl lg:text-5xl font-bold mb-2 md:mb-4 drop-shadow-md">
                         {movie.title}
                     </p>
                     
-                    {/* Botões: Flexível, wrap e itens menores no mobile */}
+                    {/* Buttons: Flexible wrap and smaller items on mobile */}
                     <div className="flex flex-row items-center gap-2 md:gap-4 flex-wrap">
                         
                         {/* Play Button */}
@@ -181,7 +183,7 @@ const InfoModal = () => {
                 </div>
             </div>
 
-            {/* --- BODY (DETALHES) --- */}
+            {/* --- BODY (DETAILS) --- */}
             <div className="px-4 md:px-12 py-8 pb-40">
                 <div className="flex flex-col md:flex-row gap-8">
                     
@@ -192,7 +194,7 @@ const InfoModal = () => {
                             <p className="text-white text-sm md:text-base">{movie.duration}</p>
                             <div className="border border-gray-400 px-1 rounded text-[10px]">HD</div>
                         </div>
-                        {/* Descrição com texto menor no mobile */}
+                        {/* Description with smaller text on mobile */}
                         <p className="text-white text-sm md:text-lg leading-relaxed">{movie.description}</p>
                     </div>
                     
@@ -212,29 +214,33 @@ const InfoModal = () => {
                         <h3 className="text-white text-lg md:text-xl font-bold mb-4">Episodes ({movie.episodes.length})</h3>
                         <div className="grid gap-4">
                             {movie.episodes.map((ep, index) => (
-                                <div key={ep.id} onClick={() => {
-                        router.push(`/watch/${movie.id}?episodeId=${ep.id}`);
-                        handleClose();
-                    }}className="flex items-center gap-4 p-3 hover:bg-zinc-800 rounded cursor-pointer transition group">
+                                <div 
+                                    key={ep.id} 
+                                    onClick={() => {
+                                        router.push(`/watch/${movie.id}?episodeId=${ep.id}`);
+                                        handleClose();
+                                    }}
+                                    className="flex items-center gap-4 p-3 hover:bg-zinc-800 rounded cursor-pointer transition group"
+                                >
                                     <span className="text-gray-400 font-bold text-lg md:text-xl group-hover:text-white transition">{index + 1}</span>
-                                   <div className="w-24 h-16 md:w-32 md:h-20 bg-zinc-700 rounded relative overflow-hidden shrink-0 border border-transparent group-hover:border-white/50 transition">
-        <Image 
-            src={ep.thumbnailUrl || movie.thumbnailUrl} 
-            alt={ep.title} 
-            fill 
-            className="object-cover opacity-80 group-hover:opacity-100 transition duration-300" 
-        />
-        
-        {/* */}
-        {/**/}
-        <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-black/50 rounded-full p-2 border-2 border-white/80 opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition duration-300 shadow-lg">
-                <Play className="w-3 h-3 md:w-4 md:h-4 text-white" fill="white" />
-            </div>
-        </div>
-    </div>
+                                    
+                                    <div className="w-24 h-16 md:w-32 md:h-20 bg-zinc-700 rounded relative overflow-hidden shrink-0 border border-transparent group-hover:border-white/50 transition">
+                                        <Image 
+                                            src={ep.thumbnailUrl || movie.thumbnailUrl} 
+                                            alt={ep.title} 
+                                            fill 
+                                            className="object-cover opacity-80 group-hover:opacity-100 transition duration-300" 
+                                        />
+                                        
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <div className="bg-black/50 rounded-full p-2 border-2 border-white/80 opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition duration-300 shadow-lg">
+                                                <Play className="w-3 h-3 md:w-4 md:h-4 text-white" fill="white" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div className="flex flex-col">
-                                        <h4 className="text-white font-bold text-sm md:text-base">{ep.title}</h4>
+                                        <h4 className="text-white font-bold text-sm md:text-base group-hover:text-neutral-300 transition">{ep.title}</h4>
                                         <p className="text-gray-400 text-xs md:text-sm mt-1 line-clamp-2">{ep.description}</p>
                                     </div>
                                     <span className="text-white text-xs md:text-sm ml-auto">{ep.duration}</span>
@@ -249,12 +255,22 @@ const InfoModal = () => {
                         More Like This
                     </h3>
                     
+                    {/* Reusing MovieCard here implies we import it at the top */}
+                    {/* The original code imported MovieCard, assuming it's correct */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {recommendations.map((rec) => (
-                            <MovieCard 
-                                key={rec.id} 
-                                data={rec} 
-                            />
+                            <div key={rec.id} className="relative h-24 md:h-40 w-full">
+                                <Image 
+                                    src={rec.thumbnailUrl} 
+                                    alt={rec.title} 
+                                    fill 
+                                    className="rounded-md object-cover hover:opacity-80 transition cursor-pointer"
+                                    onClick={() => {
+                                        setMovie(rec);
+                                        // Reset scroll to top of modal if needed, or rely on state update
+                                    }}
+                                />
+                            </div>
                         ))}
                     </div>
                     

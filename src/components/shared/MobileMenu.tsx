@@ -11,7 +11,6 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ visible }) => {
   }
 
   return (
-    // CORREÇÃO AQUI: Fundo sólido, bordas arredondadas, sombra e z-index alto
     <div className="bg-zinc-900 w-48 absolute top-10 left-0 py-4 flex-col border border-zinc-800 rounded-md flex z-50 shadow-[0_10px_20px_rgba(0,0,0,0.9)]">
       <div className="flex flex-col gap-3">
         
