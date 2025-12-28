@@ -1,10 +1,8 @@
 import Hero from "@/components/shared/Hero";
 import MovieRow from "@/components/shared/MovieRow";
 import InfoModal from "@/components/shared/InfoModal"; 
-import { prisma } from "@/lib/prisma"; // <--- MUDANÇA: Importando da lib
+import { prisma } from "@/lib/prisma"; 
 import { currentUser } from "@clerk/nextjs/server"; 
-
-// REMOVIDO: const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 
@@ -22,14 +20,13 @@ export default async function MoviesPage() {
     likedIds = likesData.map((item) => item.movieId);
   }
 
-  // 1. Fetch a specific Movie for the Hero
-  // DICA: Se "Elephants Dream" não existir no seed, troque por um filme que você tem certeza, tipo "Inception"
+  // Fetch a specific Movie for the Hero
   const heroMovie = await prisma.movie.findFirst({
     where: { title: 'Elephants Dream' }, 
     include: { tags: true, actors: true, episodes: true }
   });
 
-  // 2. Fetch ONLY Movies (No episodes)
+  // Fetch ONLY Movies (No episodes)
   const movies = await prisma.movie.findMany({
     where: {
       episodes: { none: {} } 
@@ -42,7 +39,7 @@ export default async function MoviesPage() {
     }
   });
 
-  // 3. Filter movies by Tag
+  // Filter movies by Tag
   const comedyMovies = movies.filter(m => m.tags.some(t => t.name === 'Comedy'));
   const scifiMovies = movies.filter(m => m.tags.some(t => t.name === 'Sci-Fi'));
   const dramaMovies = movies.filter(m => m.tags.some(t => t.name === 'Drama'));

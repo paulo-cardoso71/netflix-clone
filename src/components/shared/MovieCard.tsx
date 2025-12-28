@@ -77,6 +77,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   return (
     <div className="group bg-zinc-900 col-span relative h-[12vw] w-full cursor-pointer">
       
+      {/* Default Thumbnail */}
       <div onClick={handleOpenModal}>
           <Image 
             src={data.thumbnailUrl} 
@@ -86,6 +87,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
           />
       </div>
 
+      {/* Hover Card Expansion */}
       <div className="opacity-0 absolute top-0 transition duration-200 z-10 invisible sm:visible delay-300 w-full scale-0 group-hover:scale-110 group-hover:-translate-y-[6vw] group-hover:translate-x-[2vw] group-hover:opacity-100">
         
         <div onClick={handleOpenModal} className="relative w-full h-[12vw]">
@@ -134,7 +136,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
                 <div className="border border-gray-400 px-1 rounded text-[8px] text-white">HD</div>
             </div>
             
-            {/* CORREÇÃO: Tamanho text-xs e cor gray-400 conforme seu pedido */}
+            {/* Genre tags */}
             <div className="flex flex-row mt-2 gap-2 items-center text-xs text-gray-400">
                {data.tags && data.tags.length > 0 ? (
                    <p>{data.tags.map(tag => tag.name).join(' • ')}</p>

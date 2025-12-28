@@ -1,9 +1,8 @@
 import React from 'react';
-// 1. IMPORTAMOS OS SUB-TIPOS NECESSÁRIOS
 import { Movie, Tag, Actor, Episode } from '@prisma/client';
 import MovieCard from './MovieCard';
 
-// 2. CRIAMOS A TIPAGEM RICA (IGUAL NO HERO)
+// Extended type definition to include relations
 interface MovieWithDetails extends Movie {
   tags: Tag[];
   actors: Actor[];

@@ -5,8 +5,6 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
 
-
-
 // =========================================================
 // ACTION 1: MY LIST (Favorites)
 // =========================================================

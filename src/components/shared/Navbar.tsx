@@ -5,23 +5,21 @@ import Link from "next/link";
 import { Search, Bell, ChevronDown } from "lucide-react"; 
 import NavbarItem from "./NavbarItem"; 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation"; 
+import { useRouter, useSearchParams, usePathname } from "next/navigation"; 
 import MobileMenu from "./MobileMenu"; 
-import { usePathname } from "next/navigation";
 
 export default function Navbar() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const pathname = usePathname();
   
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
-  // State para o Menu Mobile
+  // Mobile Menu State
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
-  // Fecha o menu mobile automaticamente se a tela aumentar
+  // Auto-close mobile menu on window resize (Desktop view)
   useEffect(() => {
       const handleResize = () => {
           if (window.innerWidth >= 768) {
@@ -32,11 +30,12 @@ export default function Navbar() {
       return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Toggle function
+  // Toggle Mobile Menu
   const toggleMobileMenu = useCallback(() => {
     setShowMobileMenu((current) => !current);
   }, []);
 
+  // Sync internal state with URL search params
   useEffect(() => {
     const currentSearch = searchParams.get("search");
     if (currentSearch) {
@@ -48,6 +47,7 @@ export default function Navbar() {
     }
   }, [searchParams]);
 
+  // Debounce search input
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (searchQuery) {
@@ -58,6 +58,7 @@ export default function Navbar() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery, router]);
 
+  // Hide Navbar on Watch page
   if (pathname?.startsWith('/watch')) {
     return null;
   }
@@ -71,7 +72,7 @@ export default function Navbar() {
           Netflix
         </Link>
 
-        {/* MENU DESKTOP (Hidden on Mobile) */}
+        {/* DESKTOP MENU */}
         <div className="hidden md:flex gap-6 text-sm text-gray-300 font-medium">
           <Link href="/" className="hover:text-gray-300/80 transition"><NavbarItem label="Home" /></Link>
           <Link href="/tv" className="hover:text-gray-300/80 transition"><NavbarItem label="TV Shows" /></Link>
@@ -80,7 +81,7 @@ export default function Navbar() {
           <Link href="/my-list" className="hover:text-gray-300/80 transition"><NavbarItem label="My List" /></Link>
         </div>
 
-        {/* MENU MOBILE (Visible ONLY on Mobile) */}
+        {/* MOBILE MENU TRIGGER */}
         <div 
             onClick={toggleMobileMenu}
             className="md:hidden flex flex-row items-center gap-2 cursor-pointer relative"
@@ -88,7 +89,6 @@ export default function Navbar() {
             <p className="text-white text-sm">Browse</p>
             <ChevronDown className={`text-white w-4 transition ${showMobileMenu ? 'rotate-180' : 'rotate-0'}`} />
             
-            {/* O Menu flutuante fica aqui dentro */}
             <MobileMenu visible={showMobileMenu} />
         </div>
       </div>

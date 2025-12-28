@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  // 1. Clean up
+  // Clean up
   await prisma.myList.deleteMany();
   await prisma.like.deleteMany();
   await prisma.episode.deleteMany();
@@ -14,7 +14,7 @@ async function main() {
 
   console.log('🧹 Database cleaned');
 
-  // 2. Create Tags (Genres)
+  // Create Tags (Genres)
   const actionTag = await prisma.tag.create({ data: { name: 'Action' } });
   const comedyTag = await prisma.tag.create({ data: { name: 'Comedy' } });
   const dramaTag = await prisma.tag.create({ data: { name: 'Drama' } });
@@ -137,7 +137,7 @@ async function main() {
     });
 
   // ==========================================================
-  // PARTE 2: BLOCKBUSTERS (CORRIGIDOS E MANTIDOS)
+  // PART 2: BLOCKBUSTERS
   // ==========================================================
 
   // INTERSTELLAR 

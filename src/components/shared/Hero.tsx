@@ -44,21 +44,23 @@ export default function Hero({ data }: HeroProps) {
         setIsOpen(true);
     };
 
+    // Detect if the video URL is a YouTube ID (simple check: no slashes or dots)
     const isYoutube = movie.videoUrl && !movie.videoUrl.includes('/') && !movie.videoUrl.includes('.');
 
     const handlePlayClick = () => {
-    if (movie.episodes && movie.episodes.length > 0) {
-        const firstEpId = movie.episodes[0].id; // Pega o ID do primeiro
-        router.push(`/watch/${movie.id}?episodeId=${firstEpId}`);
-    } else {
-        router.push(`/watch/${movie.id}`);
-    }
-};
+        if (movie.episodes && movie.episodes.length > 0) {
+            // Get the ID of the first episode
+            const firstEpId = movie.episodes[0].id; 
+            router.push(`/watch/${movie.id}?episodeId=${firstEpId}`);
+        } else {
+            router.push(`/watch/${movie.id}`);
+        }
+    };
 
     return (
         <div className="relative w-full h-[56.25vw] min-h-[50vh] md:min-h-[80vh] overflow-hidden bg-black">
             
-            {/* 1. IMAGEM DE FUNDO (Fica atrás de tudo como segurança) */}
+            {/* 1. BACKGROUND IMAGE (Fallback behind everything) */}
             <div className="absolute top-0 left-0 w-full h-full z-0">
                  <Image 
                     src={movie.thumbnailUrl || ""}
@@ -69,10 +71,10 @@ export default function Hero({ data }: HeroProps) {
                  />
             </div>
 
-            {/* 2. CAMADA DE VÍDEO (Cobre a imagem) */}
+            {/* 2. VIDEO LAYER (Covers the image) */}
             {isYoutube ? (
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-                    {/* IFRAME DO YOUTUBE: Com scale maior para cortar barras pretas e sem opacidade */}
+                    {/* YOUTUBE IFRAME: Scaled up to remove black bars, no opacity */}
                     <iframe
                         className="w-full h-[150%] -mt-[25%] lg:h-[130%] lg:-mt-[15%] object-cover scale-[1.5] brightness-[60%]"
                         src={`https://www.youtube.com/embed/${movie.videoUrl}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${movie.videoUrl}&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0`}
@@ -92,11 +94,11 @@ export default function Hero({ data }: HeroProps) {
                 />
             )}
 
-            {/* 3. GRADIENTE (Para leitura do texto) */}
+            {/* 3. GRADIENT (For text readability) */}
             <div className="absolute inset-0 bg-gradient-to-r from-zinc-900 via-transparent to-transparent z-10 opacity-80" />
             <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-zinc-900 via-zinc-900/40 to-transparent z-10" />
 
-            {/* 4. CONTEÚDO */}
+            {/* 4. CONTENT */}
             <div className="absolute top-[20%] md:top-[40%] left-4 md:left-12 w-[90%] md:w-[40%] z-20">
                 <h1 className="text-white text-3xl md:text-6xl font-bold drop-shadow-xl mb-2 md:mb-4 transition-transform duration-500">
                     {movie.title}

@@ -1,9 +1,15 @@
-import { prisma } from "@/lib/prisma"; // <--- MUDANÇA: Importando da lib
+import { prisma } from "@/lib/prisma"; 
 import { currentUser } from "@clerk/nextjs/server"; 
 import Navbar from "@/components/shared/Navbar";
 import MovieCard from "@/components/shared/MovieCard";
+import { Movie, Tag, Actor, Episode } from '@prisma/client';
 
-// REMOVIDO: const prisma = new PrismaClient();
+// Type definition
+interface MovieWithDetails extends Movie {
+  tags: Tag[];
+  actors: Actor[];
+  episodes: Episode[];
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -21,9 +27,9 @@ export default async function NewAndPopularPage() {
     likedIds = likesData.map((item) => item.movieId);
   }
 
-  // Busca filmes ordenados pelo ano de lançamento (descendente)
+  // Fetch movies ordered by release year (descending)
   const movies = await prisma.movie.findMany({
-    take: 20, // Pega os 20 mais recentes
+    take: 20,
     orderBy: [
         { releaseYear: 'desc' },
         { createdAt: 'desc' }
@@ -47,7 +53,7 @@ export default async function NewAndPopularPage() {
                 {movies.map((movie) => (
                     <MovieCard 
                         key={movie.id} 
-                        data={movie} 
+                        data={movie as MovieWithDetails} 
                         isFavorite={favoriteIds.includes(movie.id)}
                         isLiked={likedIds.includes(movie.id)}
                     />
