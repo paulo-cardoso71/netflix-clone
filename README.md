@@ -120,4 +120,4 @@ This project is deployed on Vercel with automatic CI/CD pipelines connected to t
 
 ## Author
 
-Developed by Paulo. Full Stack Developer focused on building scalable, high-performance web applications.
+Developed by Paulo Cardoso. Full Stack Developer focused on building scalable, high-performance web applications.
