@@ -1,10 +1,10 @@
-# Netflix Clone - Full Stack Streaming Platform 🎬
+# Nextflix - Full Stack Streaming Platform 🎬
 
 > A sophisticated, high-performance streaming application clone built to demonstrate mastery of the Next.js ecosystem, complex data modeling, and modern UI/UX principles.
 
 ## 📋 What is this?
 
-**Netflix Clone** is a fully functional Single Page Application (SPA) that simulates a premium video streaming service. It allows users to authenticate, browse a vast library of movies and TV shows, manage a personal watchlist, and experience seamless video playback.
+**Nextflix** is a fully functional Single Page Application (SPA) that simulates a premium video streaming service. It allows users to authenticate, browse a vast library of movies and TV shows, manage a personal watchlist, and experience seamless video playback.
 
 Unlike simple UI clones, this project implements a **robust backend** capable of distinguishing between standalone Movies and multi-episode TV Series, featuring a smart hybrid video player.
 
