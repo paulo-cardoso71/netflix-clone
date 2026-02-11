@@ -174,7 +174,7 @@ async function main() {
       title: "The Dark Knight",
       description: "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
       thumbnailUrl: "/images/dark-knight.webp",
-      videoUrl: "xLcHPsWK5xg",
+      videoUrl: "vetKTtM7YyU",
       duration: "2h 32m",
       rating: 9.0,
       releaseYear: 2008,
@@ -229,12 +229,12 @@ async function main() {
     data: {
       title: "War for the Planet of the Apes",
       description: "After the apes suffer unimaginable losses, Caesar wrestles with his darker instincts and begins his own mythic quest to avenge his kind.",
-      thumbnailUrl: "https://image.tmdb.org/t/p/original/ulMscezy9YX0bhknvJbZoUgQxO5.jpg", // Imagem de Gorila Real
-      videoUrl: "JDcAlo8i2y8",
+      thumbnailUrl: "https://image.tmdb.org/t/p/original/ulMscezy9YX0bhknvJbZoUgQxO5.jpg", 
+      videoUrl: "cy8szbRLKJg",
       duration: "2h 20m",
       rating: 7.4,
       releaseYear: 2017,
-      tags: { connect: [{ id: actionTag.id }, { id: scifiTag.id }] } // Mudei Tags para Ação/SciFi
+      tags: { connect: [{ id: actionTag.id }, { id: scifiTag.id }] } 
     }
   });
 
@@ -258,7 +258,7 @@ async function main() {
       title: "Your Name",
       description: "Two strangers find themselves linked in a bizarre way. When a connection forms, will distance be the only thing to keep them apart?",
       thumbnailUrl: "/images/your-name.webp",
-      videoUrl: "xU47nhruN-Q",
+      videoUrl: "VnM0TzdzJOw",
       duration: "1h 52m",
       rating: 8.4,
       releaseYear: 2016,

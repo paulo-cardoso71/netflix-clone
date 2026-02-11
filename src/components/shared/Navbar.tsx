@@ -69,7 +69,7 @@ export default function Navbar() {
       {/* LEFT SECTION */}
       <div className="flex items-center gap-8">
         <Link href="/" className="text-red-600 font-bold text-3xl uppercase tracking-tighter cursor-pointer">
-          Netflix
+          Nextflix
         </Link>
 
         {/* DESKTOP MENU */}
