@@ -118,6 +118,6 @@ It aims to bridge the gap between a visually stunning frontend and a complex, re
 
 This project is deployed on Vercel with automatic CI/CD pipelines connected to the main branch. Database hosted on MongoDB Atlas.
 
-## Author
+## 👨‍💻 Author
 
 Developed by Paulo Cardoso. Full Stack Developer focused on building scalable, high-performance web applications.
